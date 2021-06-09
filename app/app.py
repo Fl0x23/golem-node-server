@@ -17,6 +17,11 @@ def hardware_stats(status):
             "cpu_threads": status.cpu_threads(),
             "mem_gib": status.mem_gib(),
             "storage_gib": status.storage_gib(),
+        },
+        "pricing": {
+            "for_start": status.price_for_start(),
+            "env_per_hour": status.price_env_per_hour(),
+            "cpu_per_hour": status.price_cpu_per_hour(),
         }
     }
 

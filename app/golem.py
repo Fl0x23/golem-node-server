@@ -13,6 +13,7 @@ class GolemStatus:
         self._appkey_list = _get_appkey_list()
         self._profile_name = _get_profile_name()
         self._profile = _get_profile()
+        self._present_list = _get_present_list()
 
     def account(self):
         return self._config["account"]
@@ -54,6 +55,15 @@ class GolemStatus:
         if "Terminated" not in self._activity["last1h"]:
             return 0
         return self._activity["last1h"]["Terminated"]
+
+    def price_for_start(self):
+        return self._present_list[0]['usage-coeffs']['initial'] * 3600
+
+    def price_cpu_per_hour(self):
+        return self._present_list[0]['usage-coeffs']['cpu'] * 3600
+
+    def price_env_per_hour(self):
+        return self._present_list[0]['usage-coeffs']['duration'] * 3600
     
     def id(self):
         headers = self._appkey_list["headers"]
@@ -121,6 +131,43 @@ def _get_config():
     }
     '''
     return _run_return_json('ya-provider config get --json')
+
+def _get_present_list():
+    '''
+    Command: ya-provider preset list
+    Returns:
+    {  
+        "name":"vm",
+        "exeunit-name":"vm",
+        "pricing-model":"linear",
+        "usage-coeffs":{
+            "initial":0.0,
+            "duration":5.555555555555556e-6,
+            "cpu":0.00002777777777777778
+        }
+    },
+    {
+        "name":"wasmtime",
+        "exeunit-name":"wasmtime",
+        "pricing-model":"linear",
+        "usage-coeffs":{
+            "initial":0.0,
+            "duration":5.555555555555556e-6,
+            "cpu":0.00002777777777777778
+        }
+    },
+    {
+        "name":"default",
+        "exeunit-name":"wasmtime",
+        "pricing-model":"linear",
+        "usage-coeffs":{
+            "duration":0.1,
+            "initial":1.0,
+            "cpu":1.0
+        }
+    }
+    '''
+    return _run_return_json('ya-provider preset list --json') 
 
 def _get_profile_name():
     '''
