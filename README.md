@@ -34,6 +34,11 @@ Response:
             "percent": 21.7,
             "used": 7579193344
         }
+        "pricing":{
+            "cpu_per_hour":0.1,
+            "env_per_hour":0.02,
+            "for_start":0.0
+        },
         "shared": {
             "cpu_threads":15,
             "mem_gib":30.0,
