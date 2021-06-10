@@ -1,6 +1,5 @@
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for
 from flask_httpauth import HTTPTokenAuth
-
 from golem import GolemStatus
 from flask_cors import CORS
 import secrets
@@ -22,11 +21,8 @@ def generate_HTTPTokenAuth():
     else:
         return " + HTTPTokenAuth: " + str(tokens)
 
-def hardware_stats(status):
-    return {
-        "cpu": hardware.cpu(),
-        "memory": hardware.memory(),
-        "isProcessingTask": hardware.isProcessingTask(),
+def settings_stats(status):
+    return {  
         "shared": {
             "cpu_threads": status.cpu_threads(),
             "mem_gib": status.mem_gib(),
@@ -37,6 +33,13 @@ def hardware_stats(status):
             "env_per_hour": status.price_env_per_hour(),
             "cpu_per_hour": status.price_cpu_per_hour(),
         }
+    }
+
+def hardware_stats():
+    return {
+        "cpu": hardware.cpu(),
+        "memory": hardware.memory(),
+        "isProcessingTask": hardware.isProcessingTask(),
     }
 
 def current_time():
@@ -66,17 +69,24 @@ def verify_token(token):
 @app.route('/api/status', methods=['GET'])
 def stats_all():
     golem_status = GolemStatus()
+    hardware = hardware_stats()
+    hardware.update(settings_stats(golem_status))
     return {
         "timestamp" : current_time(),
-        "hardware" : hardware_stats(golem_status),
+        "hardware" : hardware,
         "info": golem(golem_status),
     }
 
-@app.route('/api/login', methods=['POST'])
+# curl -s -H "Content-Type: application/json" -d '{"cpu-per-hour": 0.1, "env-per-hour": 0.1, "starting-fee": 0.1}' -H "Authorization: Bearer V22PFvsrRcUf9j1ktipL_A" localhost:5000/api/settings | jq -r .
+@app.route('/api/settings', methods=['POST'])
 @auth.login_required
-def login():
-    print(request.json)
-    return "{login=true}"
+def settings():
+    cmd=[]
+    json = request.json
+    for key in json:
+        cmd.append("--" + key)
+        cmd.append(str(json.get(key)))
+    return stats_all()
 
 if __name__ == '__main__':
     print(generate_HTTPTokenAuth())

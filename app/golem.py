@@ -57,7 +57,7 @@ class GolemStatus:
         return self._activity["last1h"]["Terminated"]
 
     def price_for_start(self):
-        return self._present_list[0]['usage-coeffs']['initial'] * 3600
+        return self._present_list[0]['usage-coeffs']['initial']
 
     def price_cpu_per_hour(self):
         return self._present_list[0]['usage-coeffs']['cpu'] * 3600
@@ -275,3 +275,7 @@ def _get_appkey_list():
     }
     '''
     return _run_return_json('yagna app-key list --json')
+
+def set_settings(settings):
+    out = sp.Popen(["golemsp", "settings", "set"] + settings, stdout=sp.PIPE).communicate()[0].decode('utf-8')
+    return out
