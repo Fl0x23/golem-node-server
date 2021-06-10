@@ -275,7 +275,3 @@ def _get_appkey_list():
     }
     '''
     return _run_return_json('yagna app-key list --json')
-
-def set_settings(settings):
-    out = sp.Popen(["golemsp", "settings", "set"] + settings, stdout=sp.PIPE).communicate()[0].decode('utf-8')
-    return out

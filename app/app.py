@@ -1,10 +1,11 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request
 from flask_httpauth import HTTPTokenAuth
 from golem import GolemStatus
 from flask_cors import CORS
 import secrets
 import hardware
 import sys
+import subprocess as sp
 
 app = Flask(__name__)
 
@@ -12,6 +13,9 @@ CORS(app, resources=r'/api/*')
 
 auth = HTTPTokenAuth(scheme='Bearer')
 tokens = { 'V22PFvsrRcUf9j1ktipL_A': 'admin' }
+
+def set_settings(settings):
+    return sp.Popen(["golemsp", "settings", "set"] + settings, stdout=sp.PIPE).communicate()[0].decode('utf-8')
 
 def generate_HTTPTokenAuth():
     if sum(len(token) for token in tokens) == 0:
@@ -77,7 +81,6 @@ def stats_all():
         "info": golem(golem_status),
     }
 
-# curl -s -H "Content-Type: application/json" -d '{"cpu-per-hour": 0.1, "env-per-hour": 0.1, "starting-fee": 0.1}' -H "Authorization: Bearer V22PFvsrRcUf9j1ktipL_A" localhost:5000/api/settings | jq -r .
 @app.route('/api/settings', methods=['POST'])
 @auth.login_required
 def settings():
@@ -86,6 +89,7 @@ def settings():
     for key in json:
         cmd.append("--" + key)
         cmd.append(str(json.get(key)))
+    set_settings(cmd)
     return stats_all()
 
 if __name__ == '__main__':
